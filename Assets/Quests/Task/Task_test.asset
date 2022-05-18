@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 484d5330682524846b78da49524abfdf, type: 3}
+  m_Name: Task_test
+  m_EditorClassIdentifier: 
+  category: {fileID: 11400000, guid: decf9981806f8704f8899b29a579c397, type: 2}
+  codeName: KILL_THE_SLIME
+  description: You have to kill the slime
+  action: {fileID: 11400000, guid: 4f1366a624f7d2f4690ceb4106d1d0ca, type: 2}
+  targets:
+  - {fileID: 11400000, guid: 77af02301a0e4a042b7d291dadea09be, type: 2}
+  initialSuccessValue: {fileID: 0}
+  needSuccessToComplete: 5
+  canReceiveReportsDuringCompletion: 0
