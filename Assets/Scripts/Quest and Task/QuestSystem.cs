@@ -1,10 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 public class QuestSystem : MonoBehaviour
 {
+    #region Save Path
+    private const string kSaveRootPath = "questSystem";
+    private const string kActiveQuestsSavePath = "activeQuests";
+    private const string kCompletedQuestsSavePath = "completedQuests";
+    private const string kActiveAchievementsSavePath = "activeAchievements";
+    private const string kCompletedAchievementSavePath = "completedAchievements";
+    #endregion
     #region Events
     public delegate void QuestRegisteredHandler(Quest newQuest);
     public delegate void QuestCompletedHandler(Quest quest);
@@ -106,6 +114,57 @@ public class QuestSystem : MonoBehaviour
     public bool ContainsInCompletedQuests(Quest quest) => completedQuests.Any(x => x.CodeName == quest.CodeName);
     public bool ContainsInActiveAchievements(Quest quest) => activeAchievements.Any(x => x.CodeName == quest.CodeName);
     public bool ContainsInCompletedAchievements(Quest quest) => completedAchievements.Any(x => x.CodeName == quest.CodeName);
+
+    private JArray CreateSaveDatas(IReadOnlyList<Quest> quests)
+    {
+        var saveDatas = new JArray();
+        foreach (var quest in quests)
+        {
+            saveDatas.Add(JObject.FromObject(quest.ToSaveData()));
+        }
+        return saveDatas;
+    }
+
+    private void LoadSaveDatas(JToken datasToken, QuestDatabase database, System.Action<QuestSaveData,Quest> onSuccess)
+    {
+        var datas = datasToken as JArray;
+        foreach(var data in datas)
+        {
+            var saveData = data.ToObject<QuestSaveData>();
+            var quest = database.FindQuestBy(saveData.codeName);
+            onSuccess.Invoke(saveData, quest);
+        }
+    }
+
+    private void LoadActiveQuest(QuestSaveData saveData, Quest quest)
+    {
+        var newQuest = Register(quest);
+        newQuest.LoadFrom(saveData);
+    }
+
+    private void LoadCompletedQuest(QuestSaveData saveData, Quest quest)
+    {
+        var newQuest = quest.Clone();
+        newQuest.LoadFrom(saveData);
+
+        if (newQuest is Achievement)
+            completedAchievements.Add(newQuest);
+        else
+            completedQuests.Add(newQuest);
+    }
+
+    private void Save()
+    {
+        var root = new JObject();
+        root.Add(kActiveQuestsSavePath, CreateSaveDatas(activeQuests));
+        root.Add(kCompletedQuestsSavePath, CreateSaveDatas(completedQuests));
+        root.Add(kActiveAchievementsSavePath, CreateSaveDatas(activeAchievements));
+        root.Add(kCompletedAchievementSavePath, CreateSaveDatas(completedAchievements));
+
+        PlayerPrefs.SetString(kSaveRootPath, root.ToString());
+        PlayerPrefs.Save();
+
+    }
 
     #region Callback
     private void OnQuestCompleted(Quest quest)
