@@ -50,6 +50,8 @@ public class Quest : ScriptableObject
     private bool useAutoComplete;
     [SerializeField]
     private bool isCancelable;
+    [SerializeField]
+    private bool isSavable;
 
     [Header("Condition")]
     [SerializeField]
@@ -74,6 +76,7 @@ public class Quest : ScriptableObject
     public bool IsCancel => State == QuestState.Cancel;
     public virtual bool IsCancelable => isCancelable && cancelConditions.All(x => x.IsPass(this));
     public bool IsAcceptable => acceptionConditions.All(x => x.IsPass(this));
+    public virtual bool IsSavable => isSavable;
 
 
     public event TaskSuccessChangedHandler onTaskSuccessChanged;

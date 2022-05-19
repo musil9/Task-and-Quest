@@ -65,8 +65,17 @@ public class QuestSystem : MonoBehaviour
         questDatabase = Resources.Load<QuestDatabase>("QuestDatabase");
         achievementDatabase = Resources.Load<QuestDatabase>("AchievementDatabase");
 
-        foreach (var achievement in achievementDatabase.Quests)
-            Register(achievement);
+        if(!Load())
+        {
+            foreach (var achievement in achievementDatabase.Quests)
+                Register(achievement);
+        }
+    }
+
+    private void OnApplicationQuit()
+    {
+        isApplicationQuitting = true;
+        Save();
     }
 
     public Quest Register(Quest quest)
@@ -120,7 +129,8 @@ public class QuestSystem : MonoBehaviour
         var saveDatas = new JArray();
         foreach (var quest in quests)
         {
-            saveDatas.Add(JObject.FromObject(quest.ToSaveData()));
+            if(quest.IsSavable)
+                saveDatas.Add(JObject.FromObject(quest.ToSaveData()));
         }
         return saveDatas;
     }
@@ -164,6 +174,23 @@ public class QuestSystem : MonoBehaviour
         PlayerPrefs.SetString(kSaveRootPath, root.ToString());
         PlayerPrefs.Save();
 
+    }
+
+    private bool Load()
+    {
+        if (PlayerPrefs.HasKey(kSaveRootPath))
+        {
+            var root = JObject.Parse(PlayerPrefs.GetString(kSaveRootPath));
+
+            LoadSaveDatas(root[kActiveQuestsSavePath], questDatabase, LoadActiveQuest);
+            LoadSaveDatas(root[kCompletedQuestsSavePath], questDatabase, LoadCompletedQuest);
+
+            LoadSaveDatas(root[kActiveAchievementsSavePath], questDatabase, LoadActiveQuest);
+            LoadSaveDatas(root[kCompletedAchievementSavePath], questDatabase, LoadCompletedQuest);
+            return true;
+        }
+        else
+            return false;
     }
 
     #region Callback
